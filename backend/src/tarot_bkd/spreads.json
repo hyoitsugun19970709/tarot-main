@@ -1,0 +1,118 @@
+{
+  "spreads": [
+    {
+      "id": "three_card_spread",
+      "i18n": {
+        "en": {
+          "name": "Three Card Spread",
+          "description": "Past, Present, Future"
+        },
+        "zh": {},
+        "jp": {}
+      },
+      "positions": [
+        {
+          "key": "past",
+          "i18n": {
+            "en": {
+              "name": "Past",
+              "description": "The past position represents events, influences, or situations that have already occurred and may still be affecting the present. It can provide insight into how past experiences shape current circumstances."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "present",
+          "i18n": {
+            "en": {
+              "name": "Present",
+              "description": "The present position represents the current situation, influences, or circumstances. It provides insight into what is happening now and how it may be affecting the querent."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "future",
+          "i18n": {
+            "en": {
+              "name": "Future",
+              "description": "The future position represents potential outcomes, influences, or situations that may arise. It offers guidance on what to expect and how to prepare for upcoming events."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "celtic_cross",
+      "i18n": {
+        "en": {
+          "name": "Celtic Cross",
+          "description": "A comprehensive spread that provides insight into various aspects of a situation, including the present, challenges, past influences, future possibilities, and external factors."
+        },
+        "zh": {},
+        "jp": {}
+      },
+      "positions": [
+        {
+          "key": "present",
+          "i18n": {
+            "en": {
+              "name": "Present",
+              "description": "The current situation or issue being addressed in the reading."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "challenge",
+          "i18n": {
+            "en": {
+              "name": "Challenge",
+              "description": "The obstacle or challenge that the querent is currently facing."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "past",
+          "i18n": {
+            "en": {
+              "name": "Past",
+              "description": "Events or influences from the past that are relevant to the current situation."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "future",
+          "i18n": {
+            "en": {
+              "name": "Future",
+              "description": "Potential outcomes or developments that may arise from the current situation."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "external_influences",
+          "i18n": {
+            "en": {
+              "name": "External Influences",
+              "description": "Factors outside of the querent's control that may be affecting the situation."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        }
+      ]
+    }
+  ]
+}
