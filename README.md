@@ -39,11 +39,28 @@ cd backend
 pip install fastapi uvicorn pydantic anthropic
 ```
 
-### 1.2 启动命令
+### 1.2 配置 API Key
+
+在 `backend/` 目录下创建 `.env` 文件：
+
+```bash
+# backend/.env
+MINIMAX_API_KEY=你的MiniMax API Key
+```
+
+### 1.3 启动命令
 
 ```bash
 cd backend
-MINIMAX_API_KEY='你的MiniMax API Key' python3 -c "
+./start.sh
+```
+
+或手动设置环境变量：
+
+```bash
+cd backend
+source .env  # 加载环境变量
+python3 -c "
 import sys, pathlib, uvicorn
 sys.path.insert(0, 'src')
 from tarot_bkd.api import build_app
@@ -52,7 +69,7 @@ uvicorn.run(app, host='0.0.0.0', port=8000)
 "
 ```
 
-### 1.3 环境变量
+### 1.4 环境变量
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
@@ -100,19 +117,16 @@ const BASE_URL = "http://你的服务器IP:8000"
 git clone https://github.com/hyoitsugun19970709/tarot-main
 cd tarot-main/backend
 
-# 设置 API Key
-vi ~/.bashrc
-export MINIMAX_API_KEY='你的Key'
-source ~/.bashrc
+# 创建 .env 文件（包含你的 API Key）
+vi .env
+# 添加：MINIMAX_API_KEY=你的Key
+
+# 安装依赖
+pip install fastapi uvicorn pydantic anthropic
 
 # 启动（后台运行）
-nohup python3 -c "
-import sys, pathlib, uvicorn
-sys.path.insert(0, 'src')
-from tarot_bkd.api import build_app
-app = build_app()
-uvicorn.run(app, host='0.0.0.0', port=8000)
-" &
+chmod +x start.sh
+nohup ./start.sh &
 
 # 开放端口 8000
 sudo ufw allow 8000  # 或在云控制台安全组开放
