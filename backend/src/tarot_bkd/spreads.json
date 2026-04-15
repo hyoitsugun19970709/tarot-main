@@ -102,11 +102,66 @@
           }
         },
         {
-          "key": "external_influences",
+          "key": "foundation",
           "i18n": {
             "en": {
-              "name": "External Influences",
-              "description": "Factors outside of the querent's control that may be affecting the situation."
+              "name": "Foundation",
+              "description": "The underlying foundation or basis of the situation - what supports or underlies the current circumstances."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "past_near",
+          "i18n": {
+            "en": {
+              "name": "Recent Past",
+              "description": "Recent events or influences that have led to the current situation."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "self",
+          "i18n": {
+            "en": {
+              "name": "Self",
+              "description": "How the querent sees themselves or their role in the situation."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "environment",
+          "i18n": {
+            "en": {
+              "name": "Environment",
+              "description": "The querent's environment, surroundings, or external factors affecting them."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "hopes_fears",
+          "i18n": {
+            "en": {
+              "name": "Hopes & Fears",
+              "description": "The querent's deepest hopes and fears regarding the situation."
+            },
+            "zh": {},
+            "jp": {}
+          }
+        },
+        {
+          "key": "outcome",
+          "i18n": {
+            "en": {
+              "name": "Outcome",
+              "description": "The final outcome or resolution of the situation."
             },
             "zh": {},
             "jp": {}

@@ -1,4 +1,4 @@
-import { View, Button, Text, Picker } from '@tarojs/components'
+import { View, Button, Text, Textarea } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 
 import './index.scss'
@@ -55,91 +55,153 @@ const formatMeanings = (meanings: Meanings) => {
 }
 
 export default function Index() {
-  // 所有可选牌阵
-  const [spreads, setSpreads] = useState<string[]>([])
+  // 用户问题
+  const [question, setQuestion] = useState('')
 
-  // 当前选择
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  // AI 推荐牌阵
+  const [recommendedSpread, setRecommendedSpread] = useState<string | null>(null)
+  const [recommendReason, setRecommendReason] = useState<string | null>(null)
 
   // 当前结果
   const [result, setResult] = useState<DrawResult | null>(null)
 
-  // 初始化：请求 spreads
-  useEffect(() => {
-    const fetchSpreads = async () => {
-      try {
-        const res = await tarotApi.spreads()
-        // 假设返回：{ spreads: ["a", "b"] }
-        setSpreads(res.spreads || [])
-      } catch (err) {
-        console.error(err)
-      }
-    }
+  // AI 解读
+  const [interpretation, setInterpretation] = useState<string | null>(null)
 
-    fetchSpreads()
-  }, [])
+  // 加载状态
+  const [isRecommending, setIsRecommending] = useState(false)
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [isInterpreting, setIsInterpreting] = useState(false)
 
-  // 抽牌
-  const handleDraw = async () => {
+  // 重置
+  const reset = () => {
+    setRecommendedSpread(null)
+    setRecommendReason(null)
+    setResult(null)
+    setInterpretation(null)
+  }
+
+  // AI 推荐牌阵
+  const handleRecommend = async () => {
+    if (!question.trim()) return
+
     try {
-      const selectedSpread = spreads[selectedIndex]
+      setIsRecommending(true)
+      const res = await tarotApi.recommend({ question })
+      setRecommendedSpread(res.spread)
+      setRecommendReason(res.reason)
+    } catch (err) {
+      console.error(err)
+      // 推荐失败时默认三张牌
+      setRecommendedSpread('three_card_spread')
+      setRecommendReason('使用三张牌阵进行快速解读')
+    } finally {
+      setIsRecommending(false)
+    }
+  }
+
+  // 抽牌 + AI 解读
+  const handleDraw = async () => {
+    if (!question.trim() || !recommendedSpread) return
+
+    try {
+      setIsDrawing(true)
+      setInterpretation(null)
 
       const res = await tarotApi.draw({
-        name: selectedSpread,
+        name: recommendedSpread,
         arcana: "full",
         orientation: "random"
       })
 
       setResult(res)
+
+      // 抽牌完成后，调 AI 解读
+      if (res.spread) {
+        setIsInterpreting(true)
+        try {
+          const interpretRes = await tarotApi.interpret(question, res.spread)
+          setInterpretation(interpretRes.interpretation)
+        } catch (err) {
+          console.error('解读失败:', err)
+          setInterpretation('解读服务暂时不可用，请稍后重试。')
+        } finally {
+          setIsInterpreting(false)
+        }
+      }
     } catch (err) {
       console.error(err)
+    } finally {
+      setIsDrawing(false)
     }
   }
 
   return (
     <View className='page'>
-      {/* 下拉框 */}
+      {/* 问题输入 */}
       <View className='section'>
-        <Text className='label'>选择牌阵：</Text>
-        <Picker
-          mode="selector"
-          range={spreads}
-          onChange={(e) => setSelectedIndex(Number(e.detail.value))}
-        >
-          <View className='picker-value'>
-            <Text>
-              {spreads.length > 0
-                ? spreads[selectedIndex]
-                : "加载中..."}
-            </Text>
-          </View>
-        </Picker>
+        <Text className='label'>你的问题：</Text>
+        <Textarea
+          className='question-input'
+          placeholder='例如：我该不该辞职？'
+          value={question}
+          onInput={(e) => setQuestion(e.detail.value)}
+          maxlength={200}
+          disabled={!!recommendedSpread}
+        />
       </View>
 
-      {/* 抽牌按钮 */}
-      <Button
-        className='draw-button'
-        onClick={handleDraw}
-        disabled={spreads.length === 0}
-      >
-        <Text>抽一次塔罗</Text>
-      </Button>
+      {/* 推荐牌阵区域 */}
+      {!recommendedSpread ? (
+        <>
+          <Button
+            className='recommend-button'
+            onClick={handleRecommend}
+            disabled={!question.trim() || isRecommending}
+          >
+            <Text>{isRecommending ? 'AI分析中...' : '✨ AI 推荐牌阵'}</Text>
+          </Button>
+        </>
+      ) : (
+        <>
+          <View className='section recommendation-box'>
+            <Text className='label'>✨ AI 推荐：</Text>
+            <Text className='spread-name'>{recommendedSpread === 'celtic_cross' ? '凯尔特十字（10张牌）' : '三张牌阵'}</Text>
+            <Text className='recommend-reason'>{recommendReason}</Text>
+          </View>
+
+          <View className='button-row'>
+            <Button className='change-button' onClick={reset}>
+              <Text>换个问题</Text>
+            </Button>
+            <Button
+              className='draw-button'
+              onClick={handleDraw}
+              disabled={isDrawing || isInterpreting}
+            >
+              <Text>{isDrawing ? '抽牌中...' : isInterpreting ? '解读中...' : '✨ 开始抽牌'}</Text>
+            </Button>
+          </View>
+        </>
+      )}
+
+      {/* AI 解读 */}
+      {interpretation && (
+        <View className='section interpretation-box'>
+          <Text className='label'>✨ AI 解读：</Text>
+          <Text className='interpretation-text'>{interpretation}</Text>
+        </View>
+      )}
 
       {/* 结果展示 */}
       {result && (
         <View className='section result-box'>
-          <Text className='label'>结果：</Text>
+          <Text className='label'>抽牌结果：</Text>
           <View className='result-line'>
             <Text>
-              牌阵：{result.spread?.name || spreads[selectedIndex] || '未知牌阵'}
+              牌阵：{result.spread?.name || recommendedSpread || '未知牌阵'}
             </Text>
           </View>
-
-          {!!result.spread?.description && (
-            <View className='result-line'>
-              <Text>牌阵说明：{result.spread.description}</Text>
-            </View>
-          )}
 
           {result.spread?.positions?.length ? (
             <View>
@@ -156,13 +218,7 @@ export default function Index() {
                     <View>
                       <Text className='result-line'>
                         卡牌：{pos.card.name || pos.card.id || '未知卡牌'}
-                      </Text>
-                      <Text className='result-line'>
-                        朝向：{pos.card.orientation || '未知'}
-                      </Text>
-                      <Text className='result-line'>
-                        分组：{pos.card.group || '未知'}
-                        {pos.card.suit ? ` / 花色：${pos.card.suit}` : ''}
+                        {pos.card.orientation === 'reversed' ? ' 🔃' : ' ⬆️'}
                       </Text>
                       <Text className='result-line'>
                         卡牌含义：{formatMeanings(pos.card.meanings)}

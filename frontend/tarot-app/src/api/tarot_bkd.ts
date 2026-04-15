@@ -1,7 +1,7 @@
 // src/api/tarot_bkd.ts
 import Taro from '@tarojs/taro'
 
-const BASE_URL = "http://127.0.0.1:8000"
+const BASE_URL = "http://192.168.151.152:8000"
 
 // =====================
 // 通用 request 封装
@@ -44,6 +44,15 @@ type SpreadResponse = {
   spreads: string[]
 }
 
+type InterpretResponse = {
+  interpretation: string
+}
+
+type RecommendResponse = {
+  spread: string
+  reason: string
+}
+
 
 export const tarotApi = {
 
@@ -70,6 +79,19 @@ export const tarotApi = {
       name,
       arcana,
       orientation
+    })
+  },
+
+  // POST /recommend-spread
+  recommend: (req: { question: string }) => {
+    return request<RecommendResponse>("/recommend-spread", "POST", req)
+  },
+
+  // POST /interpret
+  interpret: (question: string, spread: DrawResponse) => {
+    return request<InterpretResponse>("/interpret", "POST", {
+      question,
+      spread
     })
   },
 
