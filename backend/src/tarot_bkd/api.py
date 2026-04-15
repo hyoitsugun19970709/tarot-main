@@ -166,7 +166,7 @@ def build_app() -> FastAPI:
 
             client = _get_ai_client()
             response = client.messages.create(
-                model="MiniMax-M2.7",
+                model="MiniMax-M2.7-highspeed",
                 max_tokens=500,
                 thinking={"type": "disabled"},
                 system=RECOMMEND_SYSTEM_PROMPT,
@@ -268,7 +268,7 @@ def build_app() -> FastAPI:
 
             client = _get_ai_client()
             response = client.messages.create(
-                model="MiniMax-M2.7",
+                model="MiniMax-M2.7-highspeed",
                 max_tokens=1500,
                 thinking={"type": "disabled"},
                 system=TAROT_SYSTEM_PROMPT,
