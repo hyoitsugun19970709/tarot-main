@@ -1,17 +1,33 @@
-# Tarot
+# Tarot 塔罗牌小程序
 
-Tarot 抽牌项目，包含：
+AI 驱动的塔罗牌占卜工具，支持智能牌阵推荐和 AI 解读。
 
-- 后端：FastAPI（入口在 `backend/src/tarot_bkd/api.py`）
-- 前端：Taro + React（路径 `frontend/tarot-app`）
+- 后端：FastAPI + MiniMax M2.7 AI
+- 前端：Taro + React（编译为微信小程序）
+
+## 功能流程
+
+```
+用户输入问题 → AI 推荐牌阵（三张牌 / 凯尔特十字）
+    ↓
+用户确认并抽牌 → AI 生成完整解读
+```
 
 ## 目录结构
 
-```text
+```
 tarot/
-	backend/         # FastAPI 服务
-	frontend/
-		tarot-app/     # Taro 前端
+├── backend/                    # FastAPI 后端
+│   └── src/tarot_bkd/
+│       ├── api.py            # API 入口
+│       ├── spreads.json       # 牌阵定义
+│       └── rider_waite_cards.json  # 塔罗牌数据
+├── frontend/
+│   └── tarot-app/           # Taro 前端
+│       └── src/
+│           ├── api/          # API 调用
+│           └── pages/         # 页面组件
+└── README.md
 ```
 
 ## 1. 启动后端
@@ -20,83 +36,90 @@ tarot/
 
 ```bash
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -U pip
-pip install -e .
-pip install fastapi uvicorn pydantic
+pip install fastapi uvicorn pydantic anthropic
 ```
-
-说明：当前 `backend/pyproject.toml` 的 `dependencies` 为空，所以这里显式安装运行期依赖。
 
 ### 1.2 启动命令
 
-方式 A（按当前入口文件直接运行）：
-
 ```bash
 cd backend
-source .venv/bin/activate
-python src/tarot_bkd/api.py
+MINIMAX_API_KEY='你的MiniMax API Key' python3 -c "
+import sys, pathlib, uvicorn
+sys.path.insert(0, 'src')
+from tarot_bkd.api import build_app
+app = build_app()
+uvicorn.run(app, host='0.0.0.0', port=8000)
+"
 ```
 
-方式 B（用 uvicorn 的 factory 模式）：
+### 1.3 环境变量
 
-```bash
-cd backend
-source .venv/bin/activate
-uvicorn tarot_bkd.api:build_app --factory --host 127.0.0.1 --port 8000
-```
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `MINIMAX_API_KEY` | 是 | MiniMax API Key，从 platform.minimaxi.com 获取 |
 
-默认监听：`http://127.0.0.1:8000`
+### 1.4 API 端点
 
-### 1.3 快速验证
-
-```bash
-curl http://127.0.0.1:8000/health
-curl http://127.0.0.1:8000/spreads
-```
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/health` | GET | 健康检查 |
+| `/spreads` | GET | 获取可用牌阵列表 |
+| `/recommend-spread` | POST | AI 推荐牌阵（需要 body: `{question: string}`） |
+| `/draw` | POST | 抽牌（需要 body: `{id, name, arcana, orientation}`） |
+| `/interpret` | POST | AI 解读（需要 body: `{question, spread}`） |
 
 ## 2. 启动前端（Taro）
 
 ```bash
 cd frontend/tarot-app
 npm install
+npm run build:weapp   # 编译为微信小程序
 ```
 
-常用启动方式：
+### 2.1 前后端联调
 
-- H5 本地开发：
-
-```bash
-npm run dev:h5
-```
-
-- 微信小程序开发：
-
-```bash
-npm run dev:weapp
-```
-
-## 3. 前后端联调注意事项
-
-前端请求地址定义在：`frontend/tarot-app/src/api/tarot_bkd.ts`
-
-当前是：
+前端 API 地址在 `src/api/tarot_bkd.ts`：
 
 ```ts
-const BASE_URL = "http://192.168.240.1:8000"
+const BASE_URL = "http://你的服务器IP:8000"
 ```
 
-如果你本机直连后端（后端在本机 8000 端口），可改为：
+- 本地开发：`http://127.0.0.1:8000`
+- 手机预览：改为后端所在机器的局域网 IP
 
-```ts
-const BASE_URL = "http://127.0.0.1:8000"
+## 3. 微信开发者工具
+
+1. 导入项目目录：`frontend/tarot-app`
+2. AppID：使用测试号或正式 AppID
+3. 详情 → 本地开发：勾选「不校验合法域名、web-view...」
+
+## 4. 部署到云服务器
+
+```bash
+# 服务器上
+git clone https://github.com/hyoitsugun19970709/tarot-main
+cd tarot-main/backend
+
+# 设置 API Key
+vi ~/.bashrc
+export MINIMAX_API_KEY='你的Key'
+source ~/.bashrc
+
+# 启动（后台运行）
+nohup python3 -c "
+import sys, pathlib, uvicorn
+sys.path.insert(0, 'src')
+from tarot_bkd.api import build_app
+app = build_app()
+uvicorn.run(app, host='0.0.0.0', port=8000)
+" &
+
+# 开放端口 8000
+sudo ufw allow 8000  # 或在云控制台安全组开放
 ```
 
-如果是手机/模拟器访问，需要把 `BASE_URL` 改成后端所在机器的局域网 IP，并确保端口可访问。
+## 5. 小程序发布流程
 
-## 4. 一键启动顺序（建议）
-
-1. 终端 1：启动后端（监听 8000）。
-2. 终端 2：启动前端 `npm run dev:h5` 或 `npm run dev:weapp`。
-3. 打开前端页面后，先调用 `/health` 检查连通性，再执行抽牌。
+1. 微信开发者工具 → 上传
+2. mp.weixin.qq.com → 管理中心 → 版本管理
+3. 提交审核 → 体验版 → 正式发布
